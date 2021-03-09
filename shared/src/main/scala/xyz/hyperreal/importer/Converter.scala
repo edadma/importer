@@ -1,43 +1,29 @@
 package xyz.hyperreal.importer
 
-import java.time.{Instant, LocalDate}
-import java.time.format.{DateTimeFormatter, DateTimeParseException}
+import xyz.hyperreal.datetime.{Datetime, DatetimeFormatter}
 
 abstract class Converter[T] extends (String => Option[T])
 
-object DateUSConverter extends Converter[LocalDate] {
-  private val formatter = DateTimeFormatter.ofPattern("M/d/yyyy")
-
-  def apply(date: String): Option[LocalDate] = {
+object TimestampConverter extends Converter[Datetime] {
+  def apply(date: String): Option[Datetime] = {
     try {
-      Some(LocalDate.parse(date, formatter))
+      Some(Datetime.fromString(date))
     } catch {
-      case _: DateTimeParseException => None
+      case _: Exception => None
     }
   }
 }
 
-object TimestampConverter extends Converter[Instant] {
-  def apply(date: String): Option[Instant] = {
-    try {
-      Some(Instant.parse(date))
-    } catch {
-      case _: DateTimeParseException => None
-    }
-  }
-}
-
-object DateConverter extends Converter[LocalDate] {
+object DateConverter extends Converter[Datetime] {
   private val dateRegex = """(\d\d\d\d)-(\d\d)-(\d\d)""" r
 
-  def apply(date: String): Option[LocalDate] = {
+  def apply(date: String): Option[Datetime] = {
     try {
       val dateRegex(y, m, d) = date
 
-      Some(LocalDate.of(y.toInt, m.toInt, d.toInt))
-      //      Some(LocalDate.parse(date))
+      Some(Datetime(y.toInt, m.toInt, d.toInt))
     } catch {
-      case _: DateTimeParseException => None
+      case _: Exception => None
     }
   }
 }

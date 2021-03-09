@@ -1,6 +1,6 @@
-lazy val cross_platform_template = crossProject(JSPlatform, JVMPlatform, NativePlatform).in(file(".")).
+lazy val importer = crossProject(JSPlatform, JVMPlatform, NativePlatform).in(file(".")).
   settings(
-    name := "cross-platform-template",
+    name := "importer",
     version := "0.1.0-snapshot.1",
     scalaVersion := "2.13.5",
     scalacOptions ++=
@@ -10,8 +10,13 @@ lazy val cross_platform_template = crossProject(JSPlatform, JVMPlatform, NativeP
         "-Xasync"
       ),
     organization := "xyz.hyperreal",
-    mainClass := Some("xyz.hyperreal.cross_platform_template.Main"),
+    mainClass := Some("xyz.hyperreal.importer.Main"),
     libraryDependencies += "org.scalatest" %%% "scalatest" % "3.2.5" % "test",
+    libraryDependencies ++=
+      Seq(
+        "xyz.hyperreal" %%% "char-reader" % "0.1.12",
+        "xyz.hyperreal" %%% "datetime" % "0.1.6",
+      ),
     publishMavenStyle := true,
     publishArtifact in Test := false,
     licenses += "ISC" -> url("https://opensource.org/licenses/ISC")
