@@ -1,8 +1,10 @@
+ThisBuild / versionScheme := Some("semver-spec")
+
 lazy val importer = crossProject(JSPlatform, JVMPlatform, NativePlatform).in(file(".")).
   settings(
     name := "importer",
-    version := "0.1.0-snapshot.1",
-    scalaVersion := "2.13.5",
+    version := "0.1.0",
+    scalaVersion := "2.13.6",
     scalacOptions ++=
       Seq(
         "-deprecation", "-feature", "-unchecked",
@@ -10,15 +12,17 @@ lazy val importer = crossProject(JSPlatform, JVMPlatform, NativePlatform).in(fil
         "-Xasync"
       ),
     organization := "xyz.hyperreal",
+    githubOwner := "edadma",
+    githubRepository := "importer",
     mainClass := Some("xyz.hyperreal.importer.Main"),
     libraryDependencies += "org.scalatest" %%% "scalatest" % "3.2.5" % "test",
     libraryDependencies ++=
       Seq(
-        "xyz.hyperreal" %%% "char-reader" % "0.1.12",
-        "xyz.hyperreal" %%% "datetime" % "0.1.6",
+        "xyz.hyperreal" %%% "char-reader" % "0.1.0",
+        "xyz.hyperreal" %%% "datetime" % "0.1.0",
       ),
     publishMavenStyle := true,
-    publishArtifact in Test := false,
+    Test / publishArtifact := false,
     licenses += "ISC" -> url("https://opensource.org/licenses/ISC")
   ).
   jvmSettings(
