@@ -3,7 +3,7 @@ ThisBuild / versionScheme := Some("semver-spec")
 lazy val importer = crossProject(JSPlatform, JVMPlatform, NativePlatform).in(file(".")).
   settings(
     name := "importer",
-    version := "0.1.0",
+    version := "0.1.1",
     scalaVersion := "2.13.6",
     scalacOptions ++=
       Seq(
