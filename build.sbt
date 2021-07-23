@@ -3,7 +3,7 @@ ThisBuild / versionScheme := Some("semver-spec")
 lazy val importer = crossProject(JSPlatform, JVMPlatform, NativePlatform).in(file(".")).
   settings(
     name := "importer",
-    version := "0.1.1",
+    version := "0.1.3",
     scalaVersion := "2.13.6",
     scalacOptions ++=
       Seq(
@@ -15,7 +15,7 @@ lazy val importer = crossProject(JSPlatform, JVMPlatform, NativePlatform).in(fil
     githubOwner := "edadma",
     githubRepository := "importer",
     mainClass := Some("xyz.hyperreal.importer.Main"),
-    libraryDependencies += "org.scalatest" %%% "scalatest" % "3.2.5" % "test",
+    libraryDependencies += "org.scalatest" %%% "scalatest" % "3.2.9" % "test",
     libraryDependencies ++=
       Seq(
         "xyz.hyperreal" %%% "char-reader" % "0.1.0",

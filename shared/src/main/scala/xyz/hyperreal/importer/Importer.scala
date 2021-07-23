@@ -12,9 +12,11 @@ object Importer {
     if (s matches "-?\\d+") Some(s.toInt.asInstanceOf[Integer]) else None
   }
   converters("date") = DateConverter
+  converters("float") = DecimalConverter
   converters("currency") = DecimalConverter
   converters("decimal") = DecimalConverter
   converters("timestamp") = TimestampConverter
+  converters("uuid") = UUIDConverter
 
   def addConverter(name: String, converter: String => Option[AnyRef]): Unit = {
     converters(name) = converter
