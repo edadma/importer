@@ -11,6 +11,9 @@ object Importer {
   converters("integer") = { s =>
     if (s matches "-?\\d+") Some(s.toInt.asInstanceOf[Integer]) else None
   }
+  converters("bigint") = { s =>
+    if (s matches "-?\\d+") Some(BigInt(s)) else None
+  }
   converters("date") = DateConverter
   converters("float") = DecimalConverter
   converters("currency") = DecimalConverter
