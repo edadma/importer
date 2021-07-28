@@ -22,7 +22,7 @@ object Importer {
     converters(name) = converter
   }
 
-  def importFromString(s: String, doubleSpaces: Boolean): Iterable[Table] =
+  def importFromString(s: String, doubleSpaces: Boolean): Import =
     importFromReader(CharReader.fromString(s), doubleSpaces)
 
   def problem(msg: String, r: CharReader): Nothing = r.error(msg)
@@ -119,7 +119,10 @@ object Importer {
   def skip(r: CharReader, n: Int): CharReader =
     if (n == 0) r else skip(r.next, n - 1)
 
-  def table(r: CharReader, tables: mutable.LinkedHashMap[String, Table], doubleSpaces: Boolean): (CharReader, Table) = {
+  def table(r: CharReader,
+            enums: mutable.LinkedHashMap[String, Enum],
+            tables: mutable.LinkedHashMap[String, Table],
+            doubleSpaces: Boolean): (CharReader, Table) = {
     val data = new ListBuffer[Vector[AnyRef]]
     val (r1, name) = string(r, doubleSpaces)
 
@@ -129,11 +132,9 @@ object Importer {
     val header = new ArrayBuffer[Column]
     val r2 = skipSpace(r1)
 
-    if (!nl(r2))
-      problem("expected end of line after table name", r2)
+    if (!nl(r2)) problem("expected end of line after table name", r2)
 
-    if (r2.eoi)
-      problem("unexpected end of file after table name", r2)
+    if (r2.eoi) problem("unexpected end of file after table name", r2)
 
     @scala.annotation.tailrec
     def columns(r: CharReader): CharReader = {
@@ -149,8 +150,8 @@ object Importer {
             case nt :: a =>
               nt.split(" *: *", 2).toList match {
                 case List(n, t) =>
-                  if (!converters.contains(t) && t != "text")
-                    problem(s"no converter for this type ($t)", skip(r0, n.length + 1))
+                  if (t != "text" && !converters.contains(t) && !enums.contains(t))
+                    problem(s"no converter for this type: $t", skip(r0, n.length + 1))
 
                   (n, t, a)
                 case List(n) => (n, "text", a)
@@ -189,14 +190,11 @@ object Importer {
 
           val (r1, s) = string(r0, doubleSpaces)
           val s1 =
-            if (s.toLowerCase == "null")
-              null
-            else if (header(idx).typ == "text")
-              s
+            if (s.toLowerCase == "null") null
+            else if (header(idx).typ == "text" || enums.contains(header(idx).typ)) s
             else
               converters(header(idx).typ)(s) match {
-                case None =>
-                  problem(s"error converting ${header(idx).typ} value", r0)
+                case None    => problem(s"error converting ${header(idx).typ} value", r0)
                 case Some(v) => v
               }
           values += s1
@@ -204,8 +202,7 @@ object Importer {
         }
       }
 
-      if (skipSpace(r).eoi || skipSpace(r).ch == '\n')
-        skipSpace(r)
+      if (skipSpace(r).eoi || skipSpace(r).ch == '\n') skipSpace(r)
       else {
         val r1 = line(0, r)
 
@@ -223,20 +220,35 @@ object Importer {
 
   def importFromReader(r: CharReader, doubleSpaces: Boolean): Import = {
     val tables = mutable.LinkedHashMap.empty[String, Table]
+    val enums = mutable.LinkedHashMap.empty[String, Enum]
 
     @scala.annotation.tailrec
     def read(r: CharReader): Unit = {
       val r1 = skipEmptyLines(r)
 
       if (!r1.eoi) {
-        val (r2, tab) = table(r1, tables, doubleSpaces)
+        val (r3, s) = string(r1, doubleSpaces)
 
-        tables += (tab.name -> tab)
-        read(r2)
+        if (s contains ':') {
+          s.split(" *: *", 2).toList match {
+            case List(n, ls) =>
+              ls.split(" *, *").toList match {
+                case Nil | "" :: _ => problem("empty enum", r1)
+                case labels =>
+                  enums(n) = Enum(n, labels)
+                  read(r3)
+              }
+          }
+        } else {
+          val (r2, tab) = table(r1, enums, tables, doubleSpaces)
+
+          tables(tab.name) = tab
+          read(r2)
+        }
       }
     }
 
     read(r)
-    Import(null, tables.values.toList)
+    Import(enums.values.toList, tables.values.toList)
   }
 }
