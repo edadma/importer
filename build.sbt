@@ -33,9 +33,10 @@ lazy val importer = crossProject(JSPlatform, JVMPlatform, NativePlatform).in(fil
   ).
   jsSettings(
     jsEnv := new org.scalajs.jsenv.nodejs.NodeJSEnv(),
-//    Test / scalaJSUseMainModuleInitializer := true,
-//    Test / scalaJSUseTestModuleInitializer := false,
-    Test / scalaJSUseMainModuleInitializer := false,
-    Test / scalaJSUseTestModuleInitializer := true,
+    Test / mainClass := Some("xyz.hyperreal.importer.Main"),
+    Test / scalaJSUseMainModuleInitializer := true,
+    Test / scalaJSUseTestModuleInitializer := false,
+//    Test / scalaJSUseMainModuleInitializer := false,
+//    Test / scalaJSUseTestModuleInitializer := true,
     scalaJSUseMainModuleInitializer := true,
   )

@@ -210,7 +210,9 @@ object Importer {
         val r1 = line(0, r)
 
         data += values.toVector
-        lines(r1.next)
+
+        if (!r1.eoi) lines(r1.next)
+        else r1
       }
     }
 
@@ -219,7 +221,7 @@ object Importer {
     (r4, Table(name, header.toVector, data toList))
   }
 
-  def importFromReader(r: CharReader, doubleSpaces: Boolean): Iterable[Table] = {
+  def importFromReader(r: CharReader, doubleSpaces: Boolean): Import = {
     val tables = mutable.LinkedHashMap.empty[String, Table]
 
     @scala.annotation.tailrec
@@ -235,6 +237,6 @@ object Importer {
     }
 
     read(r)
-    tables.values
+    Import(null, tables.values.toList)
   }
 }
