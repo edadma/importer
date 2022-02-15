@@ -1,4 +1,4 @@
-package xyz.hyperreal.importer
+package io.github.edadma.importer
 
 case class Import(enums: List[Enum], tables: List[Table])
 

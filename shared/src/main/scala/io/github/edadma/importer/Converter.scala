@@ -1,6 +1,6 @@
-package xyz.hyperreal.importer
+package io.github.edadma.importer
 
-import xyz.hyperreal.datetime.Datetime
+import io.github.edadma.datetime.Datetime
 
 abstract class Converter[T] extends (String => Option[T])
 

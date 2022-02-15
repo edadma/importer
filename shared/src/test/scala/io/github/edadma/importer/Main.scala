@@ -1,4 +1,4 @@
-package xyz.hyperreal.importer
+package io.github.edadma.importer
 
 object Main extends App {
 

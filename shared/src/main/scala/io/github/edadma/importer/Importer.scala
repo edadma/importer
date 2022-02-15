@@ -1,8 +1,8 @@
-package xyz.hyperreal.importer
+package io.github.edadma.importer
 
 import scala.collection.mutable
 import scala.collection.mutable.{ArrayBuffer, ListBuffer}
-import xyz.hyperreal.char_reader.CharReader
+import io.github.edadma.char_reader.CharReader
 
 object Importer {
 
