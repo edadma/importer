@@ -1,39 +1,45 @@
 ThisBuild / versionScheme := Some("semver-spec")
 
-lazy val importer = crossProject(JSPlatform, JVMPlatform, NativePlatform).in(file(".")).
-  settings(
+lazy val importer = crossProject(JSPlatform, JVMPlatform, NativePlatform)
+  .in(file("."))
+  .settings(
     name := "importer",
     version := "0.1.5",
-    scalaVersion := "2.13.6",
+    scalaVersion := "2.13.8",
     scalacOptions ++=
       Seq(
-        "-deprecation", "-feature", "-unchecked",
-        "-language:postfixOps", "-language:implicitConversions", "-language:existentials", "-language:dynamics",
+        "-deprecation",
+        "-feature",
+        "-unchecked",
+        "-language:postfixOps",
+        "-language:implicitConversions",
+        "-language:existentials",
+        "-language:dynamics",
         "-Xasync"
       ),
-    organization := "xyz.hyperreal",
+    organization := "io.github.edadma",
     githubOwner := "edadma",
     githubRepository := "importer",
-    mainClass := Some("xyz.hyperreal.importer.Main"),
-    libraryDependencies += "org.scalatest" %%% "scalatest" % "3.2.9" % "test",
+    mainClass := Some(s"${organization.value}.${name.value}.Main"),
+    libraryDependencies += "org.scalatest" %%% "scalatest" % "3.2.11" % "test",
     libraryDependencies ++=
       Seq(
-        "xyz.hyperreal" %%% "char-reader" % "0.1.0",
-        "xyz.hyperreal" %%% "datetime" % "0.1.0",
+        "io.github.edadma" %%% "char-reader" % "0.1.7",
+        "io.github.edadma" %%% "datetime" % "0.1.11",
       ),
     publishMavenStyle := true,
     Test / publishArtifact := false,
     licenses += "ISC" -> url("https://opensource.org/licenses/ISC")
-  ).
-  jvmSettings(
+  )
+  .jvmSettings(
     libraryDependencies += "org.scala-js" %% "scalajs-stubs" % "1.0.0" % "provided",
-  ).
-  nativeSettings(
+  )
+  .nativeSettings(
     nativeLinkStubs := true
-  ).
-  jsSettings(
+  )
+  .jsSettings(
     jsEnv := new org.scalajs.jsenv.nodejs.NodeJSEnv(),
-    Test / mainClass := Some("xyz.hyperreal.importer.Main"),
+    Test / mainClass := Some(s"${organization.value}.${name.value}.Main"),
     Test / scalaJSUseMainModuleInitializer := true,
     Test / scalaJSUseTestModuleInitializer := false,
 //    Test / scalaJSUseMainModuleInitializer := false,
