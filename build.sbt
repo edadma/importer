@@ -4,7 +4,7 @@ lazy val importer = crossProject(JSPlatform, JVMPlatform, NativePlatform)
   .in(file("."))
   .settings(
     name := "importer",
-    version := "0.1.5",
+    version := "0.1.6",
     scalaVersion := "2.13.8",
     scalacOptions ++=
       Seq(
@@ -24,7 +24,7 @@ lazy val importer = crossProject(JSPlatform, JVMPlatform, NativePlatform)
     libraryDependencies += "org.scalatest" %%% "scalatest" % "3.2.11" % "test",
     libraryDependencies ++=
       Seq(
-        "io.github.edadma" %%% "char-reader" % "0.1.7",
+        "io.github.edadma" %%% "char-reader" % "0.1.8",
         "io.github.edadma" %%% "datetime" % "0.1.11",
       ),
     publishMavenStyle := true,
@@ -32,7 +32,7 @@ lazy val importer = crossProject(JSPlatform, JVMPlatform, NativePlatform)
     licenses += "ISC" -> url("https://opensource.org/licenses/ISC")
   )
   .jvmSettings(
-    libraryDependencies += "org.scala-js" %% "scalajs-stubs" % "1.0.0" % "provided",
+    libraryDependencies += "org.scala-js" %% "scalajs-stubs" % "1.1.0" % "provided",
   )
   .nativeSettings(
     nativeLinkStubs := true
