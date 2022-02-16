@@ -25,7 +25,7 @@ lazy val importer = crossProject(JSPlatform, JVMPlatform, NativePlatform)
     libraryDependencies ++=
       Seq(
         "io.github.edadma" %%% "char-reader" % "0.1.8",
-        "io.github.edadma" %%% "datetime" % "0.1.11",
+        "io.github.edadma" %%% "datetime" % "0.1.12",
       ),
     publishMavenStyle := true,
     Test / publishArtifact := false,
