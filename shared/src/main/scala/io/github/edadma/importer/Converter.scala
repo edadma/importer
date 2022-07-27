@@ -15,7 +15,7 @@ object TimestampConverter extends Converter[Datetime] {
 }
 
 object DateConverter extends Converter[Datetime] {
-  private val dateRegex = """(\d\d\d\d)-(\d\d)-(\d\d)""" r
+  private val dateRegex = """(\d\d\d\d)-(\d\d)-(\d\d)""".r
 
   def apply(date: String): Option[Datetime] = {
     try {
@@ -29,17 +29,31 @@ object DateConverter extends Converter[Datetime] {
 }
 
 object DecimalConverter extends Converter[BigDecimal] {
+  private val regex = """-?\d+(:?\.\d\d?)?""".r
+
   def apply(amount: String): Option[BigDecimal] =
-    if (amount matches """-?\d+(:?\.\d\d?)?""")
+    if (regex matches amount)
       Some(BigDecimal(amount))
     else
       None
 }
 
 object UUIDConverter extends Converter[String] {
-  def apply(amount: String): Option[String] =
-    if (amount matches """(?i)[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}""")
-      Some(amount)
+  private val regex = """(?i)[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}""".r
+
+  def apply(s: String): Option[String] =
+    if (regex matches s)
+      Some(s)
     else
       None
+}
+
+object BooleanConverter extends Converter[Boolean] {
+  private val t = Set("1", "true", "t", "True", "T", "yes", "y", "Yes", "Y", "on", "On")
+  private val f = Set("0", "false", "f", "False", "F", "no", "n", "No", "N", "off", "Off")
+
+  def apply(v: String): Option[Boolean] =
+    if t(v) then Some(true)
+    else if f(v) then Some(false)
+    else None
 }

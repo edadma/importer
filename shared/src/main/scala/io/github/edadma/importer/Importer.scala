@@ -6,7 +6,7 @@ import io.github.edadma.char_reader.CharReader
 
 object Importer {
 
-  private val converters = new mutable.HashMap[String, String => Option[AnyRef]]
+  private val converters = new mutable.HashMap[String, String => Option[Any]]
 
   converters("integer") = { s =>
     if (s matches "-?\\d+") Some(s.toInt.asInstanceOf[Integer]) else None
@@ -20,6 +20,7 @@ object Importer {
   converters("decimal") = DecimalConverter
   converters("timestamp") = TimestampConverter
   converters("uuid") = UUIDConverter
+  converters("boolean") = BooleanConverter
 
   def addConverter(name: String, converter: String => Option[AnyRef]): Unit = {
     converters(name) = converter
@@ -27,6 +28,9 @@ object Importer {
 
   def importFromString(s: String, doubleSpaces: Boolean): Import =
     importFromReader(CharReader.fromString(s), doubleSpaces)
+
+  def importFromFile(file: String, doubleSpaces: Boolean): Import =
+    importFromReader(CharReader.fromFile(file), doubleSpaces)
 
   def problem(msg: String, r: CharReader): Nothing = r.error(msg)
 
@@ -64,7 +68,7 @@ object Importer {
   }
 
   def string(r: CharReader, doubleSpaces: Boolean): (CharReader, String) = {
-    val buf = new StringBuilder
+    val buf = new mutable.StringBuilder
 
     @scala.annotation.tailrec
     def read(r: CharReader): CharReader =
@@ -126,7 +130,7 @@ object Importer {
             enums: mutable.LinkedHashMap[String, Enum],
             tables: mutable.LinkedHashMap[String, Table],
             doubleSpaces: Boolean): (CharReader, Table) = {
-    val data = new ListBuffer[Vector[AnyRef]]
+    val data = new ListBuffer[Vector[Any]]
     val (r1, name) = string(r, doubleSpaces)
 
     if (tables contains name)
@@ -176,7 +180,7 @@ object Importer {
 
     @scala.annotation.tailrec
     def lines(r: CharReader): CharReader = {
-      val values = new ArrayBuffer[AnyRef]
+      val values = new ArrayBuffer[Any]
 
       @scala.annotation.tailrec
       def line(idx: Int, r: CharReader): CharReader = {

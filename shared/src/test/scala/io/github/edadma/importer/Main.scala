@@ -1,17 +1,15 @@
 package io.github.edadma.importer
 
+import pprint._
+
 object Main extends App {
 
-  println(
+  pprintln(
     Importer.importFromString(
-      """
-      |e: a, b, c
-      |
-      |x
-      | id: integer, pk        a: timestamp        b: e 
-      | 1                2020-12-09T17:19:55.137Z  null
-      | 2                2020-12-09T18:19:55.137Z  null
-      |""".trim.stripMargin,
+      """cats
+        |pointy: boolean  round: boolean  whiskers: boolean   cat: boolean
+        |true             true            true                true
+        |""".trim.stripMargin,
       doubleSpaces = true
     ))
 

@@ -1,11 +1,14 @@
+ThisBuild / licenses += "ISC" -> url("https://opensource.org/licenses/ISC")
 ThisBuild / versionScheme := Some("semver-spec")
+
+publish / skip := true
 
 lazy val importer = crossProject(JSPlatform, JVMPlatform, NativePlatform)
   .in(file("."))
   .settings(
     name := "importer",
-    version := "0.1.7",
-    scalaVersion := "2.13.8",
+    version := "0.1.9",
+    scalaVersion := "3.1.3",
     scalacOptions ++=
       Seq(
         "-deprecation",
@@ -14,18 +17,17 @@ lazy val importer = crossProject(JSPlatform, JVMPlatform, NativePlatform)
         "-language:postfixOps",
         "-language:implicitConversions",
         "-language:existentials",
-        "-language:dynamics",
-        "-Xasync"
+        "-language:dynamics"
       ),
     organization := "io.github.edadma",
     githubOwner := "edadma",
     githubRepository := "importer",
     mainClass := Some(s"${organization.value}.${name.value}.Main"),
-    libraryDependencies += "org.scalatest" %%% "scalatest" % "3.2.11" % "test",
+    libraryDependencies += "org.scalatest" %%% "scalatest" % "3.2.12" % "test",
     libraryDependencies ++=
       Seq(
-        "io.github.edadma" %%% "char-reader" % "0.1.9",
-        "io.github.edadma" %%% "datetime" % "0.1.13",
+        "io.github.edadma" %%% "char-reader" % "0.1.10",
+        "io.github.edadma" %%% "datetime" % "0.1.15",
       ),
     publishMavenStyle := true,
     Test / publishArtifact := false,
@@ -33,6 +35,7 @@ lazy val importer = crossProject(JSPlatform, JVMPlatform, NativePlatform)
   )
   .jvmSettings(
     libraryDependencies += "org.scala-js" %% "scalajs-stubs" % "1.1.0" % "provided",
+    libraryDependencies += "com.lihaoyi" %%% "pprint" % "0.7.0" % "test",
   )
   .nativeSettings(
     nativeLinkStubs := true
