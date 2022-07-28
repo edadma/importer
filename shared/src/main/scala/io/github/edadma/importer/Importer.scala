@@ -8,15 +8,11 @@ object Importer {
 
   private val converters = new mutable.HashMap[String, String => Option[Any]]
 
-  converters("integer") = { s =>
-    if (s matches "-?\\d+") Some(s.toInt.asInstanceOf[Integer]) else None
-  }
-  converters("bigint") = { s =>
-    if (s matches "-?\\d+") Some(BigInt(s)) else None
-  }
+  converters("integer") = _.toIntOption
+  converters("float") = _.toDoubleOption
+  converters("bigint") = BigIntConverter
   converters("date") = DateConverter
-  converters("float") = DecimalConverter
-  converters("currency") = DecimalConverter
+  converters("currency") = CurrencyConverter
   converters("decimal") = DecimalConverter
   converters("timestamp") = TimestampConverter
   converters("uuid") = UUIDConverter
@@ -73,15 +69,13 @@ object Importer {
     @scala.annotation.tailrec
     def read(r: CharReader): CharReader =
       if (r.ch == '\\') {
-        if (r.next.eoi)
-          problem("unexpected end of input after escape character", r.next)
+        if (r.next.eoi) problem("unexpected end of input after escape character", r.next)
         else if (r.next.ch == 'u') {
           var r1 = r.next.next
           val ch = Array[Char](4)
 
           for (i <- 0 until 4)
-            if (r1.eoi)
-              problem("unexpected end of input within character code", r.next)
+            if (r1.eoi) problem("unexpected end of input within character code", r.next)
             else {
               val c = Character.toLowerCase(r1.ch)
 
@@ -110,8 +104,9 @@ object Importer {
 
           read(r.next.next)
         }
-      } else if (r.eoi || r.ch == '\n' || r.ch == '\t' || doubleSpaces && r.ch.isWhitespace && (r.next.eoi || r.next.ch.isWhitespace))
-        r
+      } else if (
+        r.eoi || r.ch == '\n' || r.ch == '\t' || doubleSpaces && r.ch.isWhitespace && (r.next.eoi || r.next.ch.isWhitespace)
+      ) r
       else {
         buf += r.ch
         read(r.next)
@@ -126,10 +121,12 @@ object Importer {
   def skip(r: CharReader, n: Int): CharReader =
     if (n == 0) r else skip(r.next, n - 1)
 
-  def table(r: CharReader,
-            enums: mutable.LinkedHashMap[String, Enum],
-            tables: mutable.LinkedHashMap[String, Table],
-            doubleSpaces: Boolean): (CharReader, Table) = {
+  def table(
+      r: CharReader,
+      enums: mutable.LinkedHashMap[String, Enum],
+      tables: mutable.LinkedHashMap[String, Table],
+      doubleSpaces: Boolean,
+  ): (CharReader, Table) = {
     val data = new ListBuffer[Vector[Any]]
     val (r1, name) = string(r, doubleSpaces)
 
@@ -147,8 +144,7 @@ object Importer {
     def columns(r: CharReader): CharReader = {
       val r0 = skipSpace(r)
 
-      if (r0.eoi || r0.ch == '\n')
-        r0
+      if (r0.eoi || r0.ch == '\n') r0
       else {
         val (r1, c) = string(r0, doubleSpaces)
         val (name, typ, args) =
