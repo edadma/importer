@@ -7,7 +7,7 @@ lazy val importer = crossProject(JSPlatform, JVMPlatform, NativePlatform)
   .in(file("."))
   .settings(
     name := "importer",
-    version := "0.1.10",
+    version := "0.1.11",
     scalaVersion := "3.1.3",
     scalacOptions ++=
       Seq(
@@ -27,7 +27,6 @@ lazy val importer = crossProject(JSPlatform, JVMPlatform, NativePlatform)
     libraryDependencies ++=
       Seq(
         "io.github.edadma" %%% "char-reader" % "0.1.10",
-        "io.github.edadma" %%% "datetime" % "0.1.15",
       ),
     publishMavenStyle := true,
     Test / publishArtifact := false,
@@ -39,6 +38,7 @@ lazy val importer = crossProject(JSPlatform, JVMPlatform, NativePlatform)
   )
   .nativeSettings(
     nativeLinkStubs := true,
+    libraryDependencies += "io.github.cquiroz" % "scala-java-time_native0.4_3" % "2.4.0",
   )
   .jsSettings(
     jsEnv := new org.scalajs.jsenv.nodejs.NodeJSEnv(),
@@ -48,4 +48,5 @@ lazy val importer = crossProject(JSPlatform, JVMPlatform, NativePlatform)
     Test / scalaJSUseMainModuleInitializer := false,
     Test / scalaJSUseTestModuleInitializer := true,
     scalaJSUseMainModuleInitializer := true,
+    libraryDependencies += "io.github.cquiroz" %%% "scala-java-time" % "2.4.0",
   )

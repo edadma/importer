@@ -1,26 +1,28 @@
 package io.github.edadma.importer
 
-import io.github.edadma.datetime.Datetime
+import java.time.{Instant, LocalDate, ZoneOffset, ZonedDateTime, LocalDateTime}
+
+import scala.util.{Try, Success, Failure}
 
 abstract class Converter[T] extends (String => Option[T])
 
-object TimestampConverter extends Converter[Datetime]:
-  def apply(date: String): Option[Datetime] = {
-    try {
-      Some(Datetime.fromString(date).timestamp)
-    } catch {
-      case _: Exception => None
-    }
-  }
+object TimestampConverter extends Converter[Instant]:
+  def apply(date: String): Option[Instant] =
+    Try(ZonedDateTime.parse(date)) match
+      case Success(t) => Some(t.toInstant)
+      case _ =>
+        Try(LocalDateTime.parse(date)) match
+          case Success(t) => Some(t.toInstant(ZoneOffset.UTC))
+          case _          => None
 
-object DateConverter extends Converter[Datetime]:
+object DateConverter extends Converter[LocalDate]:
   private val dateRegex = """(\d\d\d\d)-(\d\d)-(\d\d)""".r
 
-  def apply(date: String): Option[Datetime] = {
+  def apply(date: String): Option[LocalDate] = {
     try {
       val dateRegex(y, m, d) = date
 
-      Some(Datetime(y.toInt, m.toInt, d.toInt))
+      Some(LocalDate.of(y.toInt, m.toInt, d.toInt))
     } catch {
       case _: Exception => None
     }
