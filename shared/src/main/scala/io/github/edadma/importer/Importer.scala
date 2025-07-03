@@ -219,7 +219,7 @@ object Importer {
 
     val r4 = lines(r3.next)
 
-    (r4, Table(name, header.toVector, data toList))
+    (r4, Table(name, header.toVector, data.toList))
   }
 
   def importFromReader(r: CharReader, doubleSpaces: Boolean): Import = {
@@ -242,6 +242,7 @@ object Importer {
                   enums(n) = Enum(n, labels)
                   read(r3)
               }
+            case _ => problem("syntax error", r1)
           }
         } else {
           val (r2, tab) = table(r1, enums, tables, doubleSpaces)
