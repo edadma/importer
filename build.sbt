@@ -5,9 +5,8 @@ ThisBuild / scalaVersion           := "3.7.1"
 ThisBuild / organization           := "io.github.edadma"
 ThisBuild / organizationName       := "edadma"
 ThisBuild / organizationHomepage   := Some(url("https://github.com/edadma"))
-ThisBuild / version                := "0.0.1"
+ThisBuild / version                := "0.0.2"
 ThisBuild / sonatypeCredentialHost := "central.sonatype.com"
-ThisBuild / sonatypeRepository     := "https://s01.oss.sonatype.org/service/local"
 
 ThisBuild / publishConfiguration := publishConfiguration.value.withOverwrite(true).withChecksums(Vector.empty)
 ThisBuild / resolvers += Resolver.mavenLocal
@@ -33,13 +32,11 @@ ThisBuild / developers := List(
 
 ThisBuild / homepage := Some(url("https://github.com/edadma/importer"))
 
-ThisBuild / pomIncludeRepository := { _ => false }
-ThisBuild / publishTo            := {
+ThisBuild / publishTo := {
   val centralSnapshots = "https://central.sonatype.com/repository/maven-snapshots/"
   if (isSnapshot.value) Some("central-snapshots" at centralSnapshots)
   else localStaging.value
 }
-ThisBuild / publishMavenStyle := true
 
 lazy val importer = crossProject(JSPlatform, JVMPlatform, NativePlatform)
   .in(file("."))
