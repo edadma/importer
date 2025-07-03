@@ -127,14 +127,14 @@ object Importer {
       tables: mutable.LinkedHashMap[String, Table],
       doubleSpaces: Boolean,
   ): (CharReader, Table) = {
-    val data = new ListBuffer[Vector[Any]]
+    val data       = new ListBuffer[Vector[Any]]
     val (r1, name) = string(r, doubleSpaces)
 
     if (tables contains name)
       problem("table with that name already exists", r)
 
     val header = new ArrayBuffer[Column]
-    val r2 = skipSpace(r1)
+    val r2     = skipSpace(r1)
 
     if (!nl(r2)) problem("expected end of line after table name", r2)
 
@@ -146,11 +146,11 @@ object Importer {
 
       if (r0.eoi || r0.ch == '\n') r0
       else {
-        val (r1, c) = string(r0, doubleSpaces)
+        val (r1, c)           = string(r0, doubleSpaces)
         val (name, typ, args) =
           c.split(" *, *").toList match {
             case Nil | "" :: _ => problem("invalid header", r0)
-            case nt :: a =>
+            case nt :: a       =>
               nt.split(" *: *", 2).toList match {
                 case List(n, t) =>
                   if (t != "text" && !converters.contains(t) && !enums.contains(t))
@@ -158,6 +158,7 @@ object Importer {
 
                   (n, t, a)
                 case List(n) => (n, "text", a)
+                case _       => problem("syntax error", r0)
               }
           }
 
@@ -192,7 +193,7 @@ object Importer {
             problem("too many values in this row", r0)
 
           val (r1, s) = string(r0, doubleSpaces)
-          val s1 =
+          val s1      =
             if (s.toLowerCase == "null") null
             else if (header(idx).typ == "text" || enums.contains(header(idx).typ)) s
             else
@@ -223,7 +224,7 @@ object Importer {
 
   def importFromReader(r: CharReader, doubleSpaces: Boolean): Import = {
     val tables = mutable.LinkedHashMap.empty[String, Table]
-    val enums = mutable.LinkedHashMap.empty[String, Enum]
+    val enums  = mutable.LinkedHashMap.empty[String, Enum]
 
     @scala.annotation.tailrec
     def read(r: CharReader): Unit = {
@@ -237,7 +238,7 @@ object Importer {
             case List(n, ls) =>
               ls.split(" *, *").toList match {
                 case Nil | "" :: _ => problem("empty enum", r1)
-                case labels =>
+                case labels        =>
                   enums(n) = Enum(n, labels)
                   read(r3)
               }

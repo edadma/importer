@@ -10,7 +10,7 @@ object TimestampConverter extends Converter[Instant]:
   def apply(date: String): Option[Instant] =
     Try(ZonedDateTime.parse(date)) match
       case Success(t) => Some(t.toInstant)
-      case _ =>
+      case _          =>
         Try(LocalDateTime.parse(date)) match
           case Success(t) => Some(t.toInstant(ZoneOffset.UTC))
           case _          => None
@@ -20,7 +20,7 @@ object DateConverter extends Converter[LocalDate]:
 
   def apply(date: String): Option[LocalDate] = {
     try {
-      val dateRegex(y, m, d) = date
+      val dateRegex(y, m, d) = date: @unchecked
 
       Some(LocalDate.of(y.toInt, m.toInt, d.toInt))
     } catch {
