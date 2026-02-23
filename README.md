@@ -1,70 +1,129 @@
-# module-name  
+# importer
 
-**Badges** 
+![Maven Central](https://img.shields.io/maven-central/v/io.github.edadma/importer_sjs1_3)
+[![Last Commit](https://img.shields.io/github/last-commit/edadma/importer)](https://github.com/edadma/importer/commits)
+![GitHub](https://img.shields.io/github/license/edadma/importer)
+![Scala Version](https://img.shields.io/badge/Scala-3.8.1-blue.svg)
+![ScalaJS Version](https://img.shields.io/badge/Scala.js-1.20.2-blue.svg)
+![Scala Native Version](https://img.shields.io/badge/Scala_Native-0.5.10-blue.svg)
 
-Optional badges such as npm version, test and build coverage, and so on.
-
-**Summary** 
-
-One- or two-sentence description of what the module does.
+A cross-platform Scala 3 library for importing typed tabular data from a simple, human-readable text format. Supports JVM, Scala.js (Node.js), and Scala Native.
 
 ## Overview
 
-Optionally, include a section of one or two paragraphs with more high-level 
-information on what the module does, what problems it solves, why one would 
-use it and how.  Don't just repeat what's in the summary.
+`importer` parses a lightweight whitespace-delimited text format into structured tables with typed columns. Headers declare column names and types; the library automatically converts each cell value to the appropriate Scala type. Supported types include integers, floats, decimals, currencies, booleans, dates, timestamps, UUIDs, and arbitrary text. Custom enum types and user-defined converters are also supported.
 
 ## Installation
 
+Add to your `build.sbt`:
+
+```scala
+libraryDependencies += "io.github.edadma" %%% "importer" % "0.1.0"
 ```
-$ npm install module-name
+
+## Data Format
+
+Data files consist of one or more table blocks. Each block starts with a table name, followed by a header row of typed column definitions, then data rows:
+
+```
+users
+id:integer  name  email           active:boolean  joined:date
+1           Alice alice@example.com  true          2023-01-15
+2           Bob   bob@example.com    false         2023-03-22
 ```
 
-## Basic use
+Column headers use the syntax `name:type`. Omitting the type defaults to `text`. Multiple column args are separated by commas.
 
-General description of how to use the module with basic example.
+### Supported Types
 
-## API 
+| Type        | Scala type        | Example value         |
+|-------------|-------------------|-----------------------|
+| `text`      | `String`          | `hello world`         |
+| `integer`   | `Int`             | `42`                  |
+| `float`     | `Double`          | `3.14`                |
+| `bigint`    | `BigInt`          | `123456789012345`     |
+| `decimal`   | `BigDecimal`      | `9.99`                |
+| `currency`  | `BigDecimal`      | `19.99`               |
+| `boolean`   | `Boolean`         | `true`, `yes`, `1`    |
+| `date`      | `LocalDate`       | `2024-06-01`          |
+| `timestamp` | `Instant`         | `2024-06-01T12:00:00Z`|
+| `uuid`      | `String`          | `550e8400-e29b-41d4...`|
 
-Full API documentation.
+The special value `null` in any cell produces a `null` value regardless of column type.
 
-## Examples
+### Enums
 
-Additional examples here.
+Declare named enum types before the tables that use them:
 
-## Tests
+```
+status: active, inactive, pending
 
-What tests are included and how to run them. 
+orders
+id:integer  status  amount:currency
+1           active  19.99
+2           pending  5.00
+```
 
-## Contributing
+### Double-space mode
 
-This project welcomes contributions from the community. Contributions are
-accepted using GitHub pull requests; for more information, see 
-[GitHub documentation - Creating a pull request](https://help.github.com/articles/creating-a-pull-request/).
+When `doubleSpaces = true`, two or more consecutive spaces act as a column delimiter, allowing single spaces within values:
 
-For a good pull request, we ask you provide the following:
+```
+products
+name                    price:currency
+Widget Deluxe           9.99
+Super Gadget Pro Max    49.99
+```
 
-1. Include a clear description of your pull request in the description
-   with the basic "what" and "why"s for the request.
-2. The tests should pass as best as you can. GitHub will automatically run
-   the tests as well, to act as a safety net.
-3. The pull request should include tests for the change. A new feature should
-   have tests for the new feature and bug fixes should include a test that fails
-   without the corresponding code change and passes after they are applied.
-   The command `npm run test-cov` will generate a `coverage/` folder that
-   contains HTML pages of the code coverage, to better understand if everything
-   you're adding is being tested.
-4. If the pull request is a new feature, please include appropriate documentation 
-   in the `README.md` file as well.
-5. To help ensure that your code is similar in style to the existing code,
-   run the command `npm run lint` and fix any displayed issues.
+## Usage
 
-## Contributors
+```scala
+import io.github.edadma.importer.Importer
 
-Names of module "owners" (lead developers) and other developers who 
-have contributed.
+// From a string
+val result = Importer.importFromString(data, doubleSpaces = false)
+
+// From a file
+val result = Importer.importFromFile("data.txt", doubleSpaces = false)
+
+// Access results
+result.tables.foreach { table =>
+  println(s"Table: ${table.name}")
+  table.header.foreach(col => print(s"  ${col.name}:${col.typ}"))
+  println()
+  table.data.foreach(row => println(s"  $row"))
+}
+
+result.enums.foreach { e =>
+  println(s"Enum ${e.name}: ${e.labels.mkString(", ")}")
+}
+```
+
+### Adding a custom converter
+
+```scala
+Importer.addConverter("percent", s =>
+  if s.endsWith("%") then s.dropRight(1).toDoubleOption else None
+)
+```
+
+## Building and Testing
+
+Requirements: JDK 11+, sbt 1.12.1+, Node.js (for JS), LLVM/Clang (for Native)
+
+```bash
+# Compile all platforms
+sbt compile
+
+# Run tests on all platforms
+sbt test
+
+# Run tests on a specific platform
+sbt "importerJVM/test"
+sbt "importerJS/test"
+sbt "importerNative/test"
+```
 
 ## License
 
-Link to the license, with a short description of what it is, 
-e.g. "MIT" or whatever.
+ISC — see [LICENSE](LICENSE)

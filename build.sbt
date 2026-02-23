@@ -1,12 +1,14 @@
-ThisBuild / licenses += "ISC"      -> url("https://opensource.org/licenses/ISC")
+import xerial.sbt.Sonatype.sonatypeCentralHost
+
+ThisBuild / licenses               := Seq("ISC" -> url("https://opensource.org/licenses/ISC"))
 ThisBuild / versionScheme          := Some("semver-spec")
 ThisBuild / evictionErrorLevel     := Level.Warn
-ThisBuild / scalaVersion           := "3.7.1"
+ThisBuild / scalaVersion           := "3.8.1"
 ThisBuild / organization           := "io.github.edadma"
 ThisBuild / organizationName       := "edadma"
 ThisBuild / organizationHomepage   := Some(url("https://github.com/edadma"))
-ThisBuild / version                := "0.0.9"
-ThisBuild / sonatypeCredentialHost := "central.sonatype.com"
+ThisBuild / version                := "0.1.0"
+ThisBuild / sonatypeCredentialHost := sonatypeCentralHost
 
 ThisBuild / publishConfiguration := publishConfiguration.value.withOverwrite(true).withChecksums(Vector.empty)
 ThisBuild / resolvers += Resolver.mavenLocal
@@ -30,13 +32,10 @@ ThisBuild / developers := List(
   ),
 )
 
-ThisBuild / homepage := Some(url("https://github.com/edadma/importer"))
+ThisBuild / homepage    := Some(url("https://github.com/edadma/importer"))
+ThisBuild / description := "Cross-platform Scala library for importing typed tabular data"
 
-ThisBuild / publishTo := {
-  val centralSnapshots = "https://central.sonatype.com/repository/maven-snapshots/"
-  if (isSnapshot.value) Some("central-snapshots" at centralSnapshots)
-  else localStaging.value // ← This is the key difference!
-}
+ThisBuild / publishTo := sonatypePublishToBundle.value
 
 lazy val importer = crossProject(JSPlatform, JVMPlatform, NativePlatform)
   .in(file("."))
@@ -59,7 +58,6 @@ lazy val importer = crossProject(JSPlatform, JVMPlatform, NativePlatform)
       ),
     publishMavenStyle      := true,
     Test / publishArtifact := false,
-    licenses += "ISC"      -> url("https://opensource.org/licenses/ISC"),
   )
   .jvmSettings(
     libraryDependencies += "org.scala-js" %% "scalajs-stubs" % "1.1.0" % "provided",
@@ -70,13 +68,12 @@ lazy val importer = crossProject(JSPlatform, JVMPlatform, NativePlatform)
     libraryDependencies += "io.github.cquiroz" %%% "scala-java-time" % "2.6.0",
   )
   .jsSettings(
-    jsEnv            := new org.scalajs.jsenv.nodejs.NodeJSEnv(),
-    Test / mainClass := Some(s"${organization.value}.${name.value}.Main"),
-//    Test / scalaJSUseMainModuleInitializer := true,
-//    Test / scalaJSUseTestModuleInitializer := false,
-    Test / scalaJSUseMainModuleInitializer      := false,
-    Test / scalaJSUseTestModuleInitializer      := true,
-    scalaJSUseMainModuleInitializer             := true,
+    jsEnv                                  := new org.scalajs.jsenv.nodejs.NodeJSEnv(),
+    scalaJSLinkerConfig ~= { _.withModuleKind(ModuleKind.ESModule) },
+    scalaJSLinkerConfig ~= { _.withSourceMap(false) },
+    Test / scalaJSUseMainModuleInitializer := false,
+    Test / scalaJSUseTestModuleInitializer := true,
+    scalaJSUseMainModuleInitializer        := true,
     libraryDependencies += "io.github.cquiroz" %%% "scala-java-time" % "2.6.0",
   )
 
