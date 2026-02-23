@@ -72,7 +72,7 @@ object Importer {
         if (r.next.eoi) problem("unexpected end of input after escape character", r.next)
         else if (r.next.ch == 'u') {
           var r1 = r.next.next
-          val ch = Array[Char](4)
+          val ch = new Array[Char](4)
 
           for (i <- 0 until 4)
             if (r1.eoi) problem("unexpected end of input within character code", r.next)
