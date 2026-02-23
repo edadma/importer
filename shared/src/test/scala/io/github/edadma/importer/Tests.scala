@@ -31,10 +31,10 @@ class Tests extends AnyFreeSpec with Matchers {
     )
   }
 
-  "integer column" in {
+  "int column" in {
     val result = imp("""
       |scores
-      |name   score:integer
+      |name   score:int
       |Alice  42
       |Bob    7
       """)
@@ -45,10 +45,10 @@ class Tests extends AnyFreeSpec with Matchers {
     )
   }
 
-  "float column" in {
+  "real column" in {
     val result = imp("""
       |readings
-      |label  value:float
+      |label  value:real
       |temp   98.6
       |pi     3.14159
       """)
@@ -110,24 +110,10 @@ class Tests extends AnyFreeSpec with Matchers {
     result.tables.head.data.head(1) shouldBe Instant.parse("2024-06-01T09:30:00Z")
   }
 
-  "currency column" in {
-    val result = imp("""
-      |prices
-      |item    price:currency
-      |widget  9.99
-      |gadget  -14.50
-      """)
-
-    result.tables.head.data shouldBe List(
-      Vector("widget", BigDecimal("9.99")),
-      Vector("gadget", BigDecimal("-14.50")),
-    )
-  }
-
-  "decimal column" in {
+  "numeric column" in {
     val result = imp("""
       |measures
-      |name  value:decimal
+      |name  value:numeric
       |pi    3.14159265
       |neg   -0.5
       |int   42
@@ -140,17 +126,17 @@ class Tests extends AnyFreeSpec with Matchers {
     )
   }
 
-  "bigint column" in {
+  "bigint column returns Long" in {
     val result = imp("""
       |big
       |name  value:bigint
-      |huge  123456789012345678901234567890
+      |max   9223372036854775807
       |neg   -42
       """)
 
     result.tables.head.data shouldBe List(
-      Vector("huge", BigInt("123456789012345678901234567890")),
-      Vector("neg", BigInt("-42")),
+      Vector("max", Long.MaxValue),
+      Vector("neg", -42L),
     )
   }
 
@@ -167,7 +153,7 @@ class Tests extends AnyFreeSpec with Matchers {
   "null values" in {
     val result = imp("""
       |data
-      |name   score:integer
+      |name   score:int
       |Alice  null
       |null   99
       """)
@@ -183,10 +169,10 @@ class Tests extends AnyFreeSpec with Matchers {
       |status: active, inactive, pending
       |
       |orders
-      |id:integer  status:status
-      |1           active
-      |2           pending
-      |3           inactive
+      |id:int  status:status
+      |1       active
+      |2       pending
+      |3       inactive
       """)
 
     result.enums shouldBe List(Enum("status", List("active", "inactive", "pending")))
@@ -219,7 +205,7 @@ class Tests extends AnyFreeSpec with Matchers {
       |# first comment
       |
       |things
-      |name   value:integer
+      |name   value:int
       |alpha  1
       |beta   2
       |
@@ -260,7 +246,7 @@ class Tests extends AnyFreeSpec with Matchers {
   }
 
   "tab-delimited mode" in {
-    val data = "items\nname\tcount:integer\napples\t5\nbananas\t3"
+    val data = "items\nname\tcount:int\napples\t5\nbananas\t3"
     val result = Importer.importFromString(data, doubleSpaces = false)
 
     result.tables.head.data shouldBe List(
@@ -273,7 +259,7 @@ class Tests extends AnyFreeSpec with Matchers {
     val result = imp(
       """
       |products
-      |name                   price:currency
+      |name                   price:numeric
       |Widget Deluxe          9.99
       |Super Gadget Pro Max   49.99
       """,
@@ -301,6 +287,117 @@ class Tests extends AnyFreeSpec with Matchers {
       Vector("loss", 25.0),
     )
   }
+
+  // ── new PetraDB-aligned type names and aliases ─────────────────────────────
+
+  "integer type aliases all return Int" in {
+    val result = imp("""
+      |t
+      |a:integer  b:smallint  c:serial  d:smallserial
+      |1          2           3         4
+      """)
+
+    result.tables.head.data.head shouldBe Vector(1, 2, 3, 4)
+  }
+
+  "bigserial returns Long" in {
+    val result = imp("""
+      |t
+      |a:bigserial
+      |9223372036854775807
+      """)
+
+    result.tables.head.data.head(0) shouldBe Long.MaxValue
+  }
+
+  "float type aliases all return Double" in {
+    val result = imp("""
+      |t
+      |a:float  b:double
+      |1.5      2.5
+      """)
+
+    val row = result.tables.head.data.head
+
+    row(0).asInstanceOf[Double] shouldBe 1.5 +- 0.001
+    row(1).asInstanceOf[Double] shouldBe 2.5 +- 0.001
+  }
+
+  "decimal is an alias for numeric" in {
+    val result = imp("""
+      |t
+      |a:numeric  b:decimal
+      |3.14       2.71
+      """)
+
+    result.tables.head.data.head shouldBe Vector(BigDecimal("3.14"), BigDecimal("2.71"))
+  }
+
+  "timestamptz alias" in {
+    val result = imp("""
+      |log
+      |event  ts:timestamptz
+      |login  2024-06-01T12:00:00Z
+      """)
+
+    result.tables.head.data.head(1) shouldBe Instant.parse("2024-06-01T12:00:00Z")
+  }
+
+  "varchar and char as text aliases" in {
+    val result = imp("""
+      |t
+      |a:varchar  b:char
+      |hello      world
+      """)
+
+    result.tables.head.data.head shouldBe Vector("hello", "world")
+  }
+
+  // ── case-insensitive type names ────────────────────────────────────────────
+
+  "case-insensitive type names" in {
+    val result = imp("""
+      |t
+      |a:INT  b:Text  c:BOOLEAN  d:DATE
+      |42     hello  true        2024-01-01
+      """)
+
+    val row = result.tables.head.data.head
+
+    row(0) shouldBe 42
+    row(1) shouldBe "hello"
+    row(2) shouldBe true
+    row(3) shouldBe LocalDate.of(2024, 1, 1)
+  }
+
+  "mixed-case column header" in {
+    val result = imp("""
+      |users
+      |id:INT  name:Text  active:Boolean
+      |1       Alice      true
+      |2       Bob        false
+      """)
+
+    result.tables.head.data shouldBe List(
+      Vector(1, "Alice", true),
+      Vector(2, "Bob", false),
+    )
+  }
+
+  "case-insensitive numeric and timestamp aliases" in {
+    val result = imp("""
+      |t
+      |a:NUMERIC  b:TIMESTAMPTZ
+      |3.14       2024-06-01T00:00:00Z
+      """)
+
+    result.tables.head.data.head shouldBe Vector(
+      BigDecimal("3.14"),
+      Instant.parse("2024-06-01T00:00:00Z"),
+    )
+  }
+
+  // ── error cases ────────────────────────────────────────────────────────────
 
   "error: unknown type" in {
     an[Exception] should be thrownBy imp("""
@@ -342,7 +439,7 @@ class Tests extends AnyFreeSpec with Matchers {
   "error: bad integer value" in {
     an[Exception] should be thrownBy imp("""
       |t
-      |x:integer
+      |x:int
       |notanint
       """)
   }

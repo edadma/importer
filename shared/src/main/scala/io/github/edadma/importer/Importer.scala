@@ -8,15 +8,40 @@ object Importer {
 
   private val converters = new mutable.HashMap[String, String => Option[Any]]
 
-  converters("integer") = _.toIntOption
-  converters("float") = _.toDoubleOption
-  converters("bigint") = BigIntConverter
-  converters("date") = DateConverter
-  converters("currency") = CurrencyConverter
+  // Integer types
+  converters("int")         = _.toIntOption
+  converters("integer")     = _.toIntOption
+  converters("smallint")    = _.toIntOption
+  converters("smallserial") = _.toIntOption
+  converters("serial")      = _.toIntOption
+  converters("bigint")      = _.toLongOption
+  converters("bigserial")   = _.toLongOption
+
+  // Float types
+  converters("real")   = _.toDoubleOption
+  converters("float")  = _.toDoubleOption
+  converters("double") = _.toDoubleOption
+
+  // Decimal types
+  converters("numeric") = DecimalConverter
   converters("decimal") = DecimalConverter
-  converters("timestamp") = TimestampConverter
+
+  // Timestamp types
+  converters("timestamp")   = TimestampConverter
+  converters("timestamptz") = TimestampConverter
+
+  // Date
+  converters("date") = DateConverter
+
+  // UUID
   converters("uuid") = UUIDConverter
+
+  // Boolean
   converters("boolean") = BooleanConverter
+
+  // Text aliases — pass through as string, same as the default text path
+  converters("varchar") = s => Some(s)
+  converters("char")    = s => Some(s)
 
   def addConverter(name: String, converter: String => Option[AnyRef]): Unit = {
     converters(name) = converter
@@ -153,10 +178,11 @@ object Importer {
             case nt :: a       =>
               nt.split(" *: *", 2).toList match {
                 case List(n, t) =>
-                  if (t != "text" && !converters.contains(t) && !enums.contains(t))
-                    problem(s"no converter for this type: $t", skip(r0, n.length + 1))
+                  val tl = t.toLowerCase
+                  if (tl != "text" && !converters.contains(tl) && !enums.contains(tl))
+                    problem(s"no converter for this type: $tl", skip(r0, n.length + 1))
 
-                  (n, t, a)
+                  (n, tl, a)
                 case List(n) => (n, "text", a)
                 case _       => problem("syntax error", r0)
               }
