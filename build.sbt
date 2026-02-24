@@ -7,7 +7,7 @@ ThisBuild / scalaVersion           := "3.8.1"
 ThisBuild / organization           := "io.github.edadma"
 ThisBuild / organizationName       := "edadma"
 ThisBuild / organizationHomepage   := Some(url("https://github.com/edadma"))
-ThisBuild / version                := "0.1.0"
+ThisBuild / version                := "0.1.1"
 ThisBuild / sonatypeCredentialHost := sonatypeCentralHost
 
 ThisBuild / publishConfiguration := publishConfiguration.value.withOverwrite(true).withChecksums(Vector.empty)
@@ -54,7 +54,7 @@ lazy val importer = crossProject(JSPlatform, JVMPlatform, NativePlatform)
     libraryDependencies += "org.scalatest" %%% "scalatest" % "3.2.19" % "test",
     libraryDependencies ++=
       Seq(
-        "io.github.edadma" %%% "char-reader" % "0.1.21",
+        "io.github.edadma" %%% "char_reader" % "0.1.24",
       ),
     publishMavenStyle      := true,
     Test / publishArtifact := false,
